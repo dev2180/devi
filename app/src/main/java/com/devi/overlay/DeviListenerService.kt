@@ -34,7 +34,7 @@ class DeviListenerService : Service() {
             when (intent.action) {
                 Intent.ACTION_SCREEN_OFF -> { AccessGuard.apply(context, "screen off"); eyes.onScreenOff(SystemClock.elapsedRealtime()); EyeBreak.stop() }
                 Intent.ACTION_SCREEN_ON -> {
-                    AccessGuard.apply(context, "screen on"); startWatchdog()
+                    AccessGuard.apply(context, "screen on"); startWatchdog(); wakeEyes()
                     if (!AccessGuard.locked(context)) eyes.onUnlockedScreen(SystemClock.elapsedRealtime())
                 }
                 Intent.ACTION_USER_PRESENT -> {
@@ -60,6 +60,8 @@ class DeviListenerService : Service() {
     private val eyeCheck = object : Runnable {
         override fun run() {
             val ctx = this@DeviListenerService
+            // Sleeps with the screen; the screen-on broadcast wakes it again.
+            if (!DeviSettings.eyeBreak(ctx) || !AccessGuard.screenOn(ctx)) return
             val now = SystemClock.elapsedRealtime()
             if (DeviSettings.eyeBreak(ctx) && AccessGuard.screenOn(ctx) && !AccessGuard.locked(ctx) && eyes.due(now, DeviSettings.eyeEvery(ctx))) {
                 if (EyeBreak.allowedNow(ctx)) { eyes.restartAt(now); EyeBreak.start(ctx, DeviSettings.eyeStyle(ctx)) }
@@ -68,6 +70,8 @@ class DeviListenerService : Service() {
             handler.postDelayed(this, 30_000)
         }
     }
+
+    private fun wakeEyes() { handler.removeCallbacks(eyeCheck); handler.postDelayed(eyeCheck, 30_000) }
 
     private fun startWatchdog() {
         handler.removeCallbacks(watchdog)
@@ -118,6 +122,7 @@ class DeviListenerService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (!needed(this)) { AccessGuard.off(this, "not needed"); stopSelf(); return START_NOT_STICKY }
         AccessGuard.apply(this, "start command")
+        if (DeviSettings.eyeBreak(this)) wakeEyes()
         return START_STICKY
     }
 

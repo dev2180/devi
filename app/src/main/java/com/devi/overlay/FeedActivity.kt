@@ -8,8 +8,6 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.RenderEffect
-import android.graphics.Shader
 import android.graphics.SurfaceTexture
 import android.graphics.drawable.GradientDrawable
 import android.media.MediaMetadataRetriever
@@ -71,11 +69,15 @@ class FeedActivity : Activity() {
     private var videoSeenPlaying = false
     /** Silent until you tap play; then each page plays as you swipe, until you pause. */
     private var listening = false
+    /** Battery saver or colour off: no drifting, bobbing or glow, fewer redraws. */
+    private var lean = false
+    private var shownPlaying: Boolean? = null
+    private var bob: ObjectAnimator? = null
 
     private fun dp(v: Float) = Ui.dp(this, v)
 
     private val tick = object : Runnable {
-        override fun run() { onTick(); main.postDelayed(this, 200) }
+        override fun run() { onTick(); main.postDelayed(this, if (lean) 1_000 else 250) }
     }
     private val fadeChrome = Runnable { if (ChantService.isPlaying) chrome.animate().alpha(0f).setDuration(600).start() }
 
@@ -94,6 +96,10 @@ class FeedActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        val wasLean = lean
+        lean = Lean.on(this)
+        if (lean != wasLean) pager.adapter?.notifyDataSetChanged()
+        if (lean) { bob?.cancel(); hint.translationY = 0f }
         immersive()
         reload(force = false)
         selectedHolder()?.let { h -> if (h.item is FeedItem.Video) h.surface?.let { ChantService.attachSurface(it) } }
@@ -142,7 +148,7 @@ class FeedActivity : Activity() {
         holderAt(wasSelected)?.stopDrift()
         if (wasSelected >= 0 && wasSelected != position) {
             pager.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-            if (hint.visibility == View.VISIBLE) hint.animate().alpha(0f).setDuration(400).withEndAction { hint.visibility = View.GONE }.start()
+            if (hint.visibility == View.VISIBLE) hint.animate().alpha(0f).setDuration(400).withEndAction { hint.visibility = View.GONE; bob?.cancel(); bob = null }.start()
         }
         val holder = holderAt(position)
         holder?.startDrift()
@@ -166,9 +172,10 @@ class FeedActivity : Activity() {
 
     private fun onTick() {
         val playing = ChantService.isPlaying
-        playButton.setImageResource(if (playing) R.drawable.ic_pause else R.drawable.ic_play)
+        if (playing != shownPlaying) { shownPlaying = playing; playButton.setImageResource(if (playing) R.drawable.ic_pause else R.drawable.ic_play) }
         val d = ChantService.durationMs()
-        progress.scaleX = if (ChantService.currentChantId != null && d > 0) (ChantService.positionMs().toFloat() / d).coerceIn(0f, 1f) else 0f
+        val p = if (ChantService.currentChantId != null && d > 0) (ChantService.positionMs().toFloat() / d).coerceIn(0f, 1f) else 0f
+        if (abs(p - progress.scaleX) > 0.0005f) progress.scaleX = p
         val v = startedVideo ?: return
         if (ChantService.currentChantId == v) {
             if (!videoSeenPlaying && ChantService.positionMs() > 120) { videoSeenPlaying = true; selectedHolder()?.hidePoster() }
@@ -268,7 +275,7 @@ class FeedActivity : Activity() {
             letterSpacing = 0.12f; gravity = Gravity.CENTER
         }
         root.addView(hint, FrameLayout.LayoutParams(-2, -2, Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL))
-        if (!Ui.reducedMotion(this)) ObjectAnimator.ofFloat(hint, View.TRANSLATION_Y, 0f, -dp(6f).toFloat()).apply {
+        if (!Lean.on(this)) bob = ObjectAnimator.ofFloat(hint, View.TRANSLATION_Y, 0f, -dp(6f).toFloat()).apply {
             duration = 1100; repeatMode = ValueAnimator.REVERSE; repeatCount = ValueAnimator.INFINITE; start()
         }
 
@@ -336,7 +343,6 @@ class FeedActivity : Activity() {
         init {
             root.setTag(R.id.feed_holder, this)
             root.setBackgroundColor(getColor(R.color.void_black))
-            backdrop.setRenderEffect(RenderEffect.createBlurEffect(dp(40f).toFloat(), dp(40f).toFloat(), Shader.TileMode.CLAMP))
             root.addView(backdrop, FrameLayout.LayoutParams(-1, -1))
             media.addView(picture, FrameLayout.LayoutParams(-1, -1))
             root.addView(media, FrameLayout.LayoutParams(-1, -1))
@@ -376,13 +382,16 @@ class FeedActivity : Activity() {
             sub.text = if (chant != null) "Tap to hear her chant" else "Pair a chant in the library"
             load("pic:${p.id}") {
                 val dm = resources.displayMetrics
-                ImageLoading.decodeForDisplay(images.file(p.id), dm.widthPixels, dm.heightPixels)
+                ImageLoading.decodeForDisplay(images.file(p.id), dm.widthPixels, dm.heightPixels)?.let { soft ->
+                    cache.put("blur:${p.id}", Glow.of(soft))
+                    soft.copy(Bitmap.Config.HARDWARE, false) ?: soft // uploaded once, here, not mid-swipe
+                }
             }.let { key -> deliver(key, p) { bmp ->
                 val screen = resources.displayMetrics.run { heightPixels.toFloat() / widthPixels }
                 val ratio = bmp.height.toFloat() / bmp.width
                 picture.scaleType = if (abs(ratio - screen) / screen < 0.22f) ImageView.ScaleType.CENTER_CROP else ImageView.ScaleType.FIT_CENTER
-                picture.setImageBitmap(bmp); backdrop.setImageBitmap(bmp)
-                fadeIn(picture)
+                picture.setImageBitmap(bmp); backdrop.setImageBitmap(if (lean) null else cache.get("blur:${p.id}"))
+                if (lean) picture.alpha = 1f else fadeIn(picture)
             } }
         }
 
@@ -414,11 +423,11 @@ class FeedActivity : Activity() {
                     main.post { if (item == v) sub.text = "Video · %d:%02d · plays on with the screen off".format(ms / 60000, (ms / 1000) % 60) }
                     val dm = resources.displayMetrics
                     r.getScaledFrameAtTime(minOf(4_000_000L, ms * 500L), MediaMetadataRetriever.OPTION_CLOSEST_SYNC, dm.widthPixels, dm.widthPixels)
-                }
+                }?.let { soft -> cache.put("blur:${v.chantId}", Glow.of(soft)); soft }
             }
             deliver(key, v) { bmp ->
                 picture.scaleType = ImageView.ScaleType.FIT_CENTER
-                picture.setImageBitmap(bmp); backdrop.setImageBitmap(bmp)
+                picture.setImageBitmap(bmp); backdrop.setImageBitmap(if (lean) null else cache.get("blur:${v.chantId}"))
                 fitTexture(tv, bmp.width, bmp.height)
             }
         }
@@ -443,7 +452,7 @@ class FeedActivity : Activity() {
 
         /** A slow breath of movement on her picture while you stay on it. */
         fun startDrift() {
-            if (item !is FeedItem.Picture || Ui.reducedMotion(this@FeedActivity)) return
+            if (item !is FeedItem.Picture || lean) return
             drift?.cancel()
             drift = ObjectAnimator.ofPropertyValuesHolder(picture,
                 PropertyValuesHolder.ofFloat(View.SCALE_X, picture.scaleX, 1.07f),

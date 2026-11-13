@@ -70,7 +70,10 @@ class ChantService : Service() {
             }
             publishState()
             if (current == null && outgoing.isEmpty()) { shutDown(); return }
-            handler.postDelayed(this, TICK_MS)
+            // Quick only while a fade is moving; once steady, wake once a second (kinder with the screen off).
+            val c = current
+            val moving = ChantPlayback.fading(paused, c?.instant ?: true, c?.gain ?: 1f, c?.fadingOut ?: false, outgoing.size)
+            handler.postDelayed(this, ChantPlayback.tickMs(moving))
         }
     }
 
@@ -164,7 +167,11 @@ class ChantService : Service() {
         v.fadingOut = true
         v.fadeFrom = v.gain
         v.fadeStart = SystemClock.uptimeMillis()
+        kick()
     }
+
+    /** Wake the clock now, so a fade starts on time even if it was resting. */
+    private fun kick() { handler.removeCallbacks(tick); handler.post(tick) }
 
     private fun stopAll(fade: Boolean) {
         val v = current
@@ -193,6 +200,7 @@ class ChantService : Service() {
         if (!requestFocus()) return
         v.player.start(); paused = false
         v.clock.resume(SystemClock.uptimeMillis())
+        kick()
         refreshNotification()
     }
 
@@ -308,7 +316,6 @@ class ChantService : Service() {
     companion object {
         private const val CHANNEL = "chants"
         private const val NOTIFICATION_ID = 7
-        private const val TICK_MS = 50L
         private const val FADE_OUT_MS = 1_500L
         private const val ACTION_PLAY = "com.devi.overlay.PLAY"
         private const val ACTION_TOGGLE = "com.devi.overlay.TOGGLE"

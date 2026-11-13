@@ -74,7 +74,8 @@ object Ui {
 
     fun goldSwitch(ctx: Context) = Switch(ctx).apply {
         val states = arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf())
-        thumbTintList = ColorStateList(states, intArrayOf(color(ctx, R.color.accent), color(ctx, R.color.muted)))
+        // On: a bright gold knob. Off: a dim knob. Readable by brightness alone, so "Colour off" can't hide it.
+        thumbTintList = ColorStateList(states, intArrayOf(color(ctx, R.color.accent), color(ctx, R.color.metal)))
         trackTintList = ColorStateList(states, intArrayOf(color(ctx, R.color.accent), color(ctx, R.color.track_off)))
         minHeight = dp(ctx, 44f)
     }

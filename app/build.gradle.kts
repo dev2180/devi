@@ -23,6 +23,17 @@ android {
     // Her chant videos ship inside the app and play straight from it, so they must stay uncompressed.
     androidResources { noCompress += listOf("webm", "mp4", "m4a") }
 
+    buildTypes {
+        // The one she runs: not debuggable, shrunk by R8, and signed with the same key as before,
+        // so it installs over the old app and keeps every picture and setting.
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
