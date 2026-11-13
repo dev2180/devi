@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- Granted once from a computer; lets AccessGuard switch Devi's Accessibility on only while locked. -->
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"
+        xmlns:tools="http://schemas.android.com/tools"
+        tools:ignore="ProtectedPermissions" />
+
+    <application
+        android:allowBackup="false"
+        android:extractNativeLibs="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="Devi">
+
+        <activity
+            android:name=".FeedActivity"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Devi.Viewer" />
+
+        <activity
+            android:name=".ManageActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Devi.Manage">
+            <!-- Share a YouTube video to Devi to add it as a chant. -->
+            <intent-filter android:label="Add to Devi's chants">
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+
+        <activity-alias
+            android:name=".LauncherTheme"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:targetActivity=".FeedActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".LauncherCrimson"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_crimson"
+            android:targetActivity=".FeedActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".LauncherIvory"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_ivory"
+            android:targetActivity=".FeedActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".LauncherWhite"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_white"
+            android:targetActivity=".FeedActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".LauncherMaroon"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_maroon"
+            android:targetActivity=".FeedActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".LauncherBlack"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_black"
+            android:targetActivity=".FeedActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".LauncherSnow"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_snow"
+            android:targetActivity=".FeedActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".LauncherInk"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_ink"
+            android:targetActivity=".FeedActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity
+            android:name=".ShortcutsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Devi.Manage" />
+
+        <activity
+            android:name=".ViewerActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:launchMode="singleInstance"
+            android:taskAffinity=""
+            android:screenOrientation="portrait"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:theme="@style/Theme.Devi.Viewer" />
+
+        <activity
+            android:name=".VideoActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:theme="@style/Theme.Devi.Viewer" />
+
+        <service
+            android:name=".DownloadService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <service
+            android:name=".ChantService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
+        <service
+            android:name=".DeviListenerService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Listens for the owner's chosen volume-button shortcut to show a picture" />
+        </service>
+
+        <service
+            android:name=".DeviAccessibilityService"
+            android:exported="true"
+            android:label="Devi"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_config" />
+        </service>
+
+        <service
+            android:name=".DeviTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile_devi"
+            android:label="Devi"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+</manifest>

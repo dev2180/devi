@@ -1,0 +1,38 @@
+# Build and IDE
+.gradle/
+.kotlin/
+build/
+local.properties
+*.iml
+.idea/
+captures/
+*.apk
+*.aab
+
+# Personal tooling
+.claude/
+.superpowers/
+.hallmark/
+desktop.ini
+
+# Copyrighted media (Isha Foundation): add your own, never commit these
+app/src/main/assets/bundled/
+app/src/main/assets/bundled_chants/
+app/src/main/assets/bundled_videos/
+chants/
+*.mp4
+*.webm
+*.m4a
+*.webp
+black.jpg
+red.jpg
+design/mockup/devi.jpg
+
+# Side experiments, not part of the app
+anahata/
+cosmic-ganesha/
+eye-break/
+lookdev/
+mesh-avatar-studio/
+eye-preview.html
+INSTALL.md

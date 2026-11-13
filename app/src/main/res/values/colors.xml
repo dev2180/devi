@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hallmark Kiln, reduction colourway: crimson silk ground, gold zari accent, cream ink. -->
+<resources>
+    <color name="ground">#3A0E10</color>
+    <color name="ground_2">#46141A</color>
+    <color name="ground_3">#55191F</color>
+    <color name="ink">#F4ECDD</color>
+    <color name="ink_2">#E3D5BF</color>
+    <color name="muted">#C9B49A</color>
+    <color name="rule">#24F4ECDD</color>
+    <color name="accent">#F0C46A</color>
+    <color name="accent_ink">#2A0C0E</color>
+    <color name="void_black">#0B0606</color>
+    <color name="scrim">#9E1A0708</color>
+    <color name="track_off">#7A3A3C</color>
+    <color name="metal">#9A8C7A</color>
+    <color name="glass">#140B0A</color>
+    <color name="wake">#A8543A</color>
+    <color name="skin">#D9A487</color>
+    <color name="skin_2">#B57F63</color>
+    <color name="nail">#F1DDD2</color>
+    <color name="ic_bg">#F5ECDC</color>
+    <color name="ic_bg_crimson">#7A0E16</color>
+    <color name="ic_bg_ivory">#F5ECDC</color>
+    <color name="ic_bg_white">#FFFFFF</color>
+    <color name="ic_bg_maroon">#1C0A0B</color>
+    <color name="ic_bg_black">#000000</color>
+    <color name="ic_bg_snow">#7A0E16</color>
+    <color name="ic_bg_ink">#FFFFFF</color>
+</resources>
